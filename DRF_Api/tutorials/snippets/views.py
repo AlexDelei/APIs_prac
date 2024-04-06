@@ -11,7 +11,11 @@ Implementing some API views using our new Serializer class
 
 from snippets.models import Snippets
 from snippets.serializers2 import SnippetsSerializer
+from snippets.serializers2 import UserSerializer
+from snippets.permissions import IsOwnerOrReadOnly
 from rest_framework import generics
+from django.contrib.auth.models import User
+from rest_framework import permissions
 
 
 class SnippetListView(generics.ListCreateAPIView):
@@ -23,6 +27,16 @@ class SnippetListView(generics.ListCreateAPIView):
     """
     queryset = Snippets.objects.all()
     serializer_class = SnippetsSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly] # authenticated user - read and write
+    # unauthenticated user - read only permissions
+
+    def perform_create(self, serializer):
+        """
+        We override the .perform_create() method on our snippet views that allows us to modify
+        how the instance is save is managed and handle any information that is implicit in the incoming
+        request or requested URL
+        """
+        serializer.save(owner=self.request.user) # passing on the `owner field` along eith the validated data from the request
 
 
 class SnippetDetailView(generics.RetrieveUpdateDestroyAPIView):
@@ -34,6 +48,25 @@ class SnippetDetailView(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = Snippets.objects.all()
     serializer_class = SnippetsSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly] # `Permissions` - will ensure that authenticated requests get
+    # read-write access, and unauthenticated requests get read-only access 
+
+
+class UserList(generics.ListAPIView):
+    """
+    Userlist performs the read-only views for the user representations
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
+
+class UserDetail(generics.RetrieveAPIView):
+    """
+    geneircs.RetreiveAPIView - user datails
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+
 
 ##################################################
 #                                                #
