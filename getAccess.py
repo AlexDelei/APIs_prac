@@ -1,7 +1,7 @@
 """
 Code for acquiring the reddit access token
 """
-from flask import Flask, request
+from flask import Flask, request, redirect
 import requests
 import json
 import urllib.parse
@@ -36,18 +36,17 @@ def get_access():
 
         respo = requests.post(url, auth=auth, data=data, headers=headers)
         r = respo.json()
-        token = r['access_token']
-        get_username(token)
-        
-        return r
+        accessToken = r.get('access_token')
+
+        return get_username(accessToken)
     return f"Click on this <a href=\"{URL}\" target=\"_blank\">link</a>."
 
-@app.route('/me', methods=['GET'])
-def get_username(access_token):
-    headers = {'Authorization': "bearer " + access_token}
+def get_username(accessToken):
+    headers = {'Authorization': "bearer " + accessToken}
     resp = requests.get("https://oauth.reddit.com/api/v1/me", headers=headers)
-    me = resp.json()
-    return me['name']
+    #me = resp.json()
+    return resp.json()['name']
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
