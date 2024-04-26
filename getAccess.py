@@ -9,8 +9,8 @@ import random
 
 import requests.auth
 
-CLIENT_ID = 'G9fsyjdmNdhVgArnCYjvaQ'
-CLIENT_SECRET = 'Bb-kyFLsB8PX59Xx1OKHCAFNgbQc3Q'
+CLIENT_ID = ''
+CLIENT_SECRET = ''
 
 # state variable is used to generate the url
 state = str(random.randint(0, 65000))
@@ -38,7 +38,7 @@ def get_access():
         r = respo.json()
         accessToken = r.get('access_token')
 
-        return get_username(accessToken), number_of_subscribers(accessToken)
+        return (get_username(accessToken), number_of_subscribers(accessToken))
     return f"Click on this <a href=\"{URL}\" target=\"_blank\">link</a>."
 
 def get_username(accessToken):
@@ -52,9 +52,10 @@ def number_of_subscribers(token):
     how many subscribers have subscribed for a certain sub reddit
     """
     headers = {'Authorization': "bearer " + token}
-    url = f'https://www.reddit.com/r/programming/about.json'
+    url = f'https://www.reddit.com/api/v1/collections/subreddit_collection'
     r = requests.get(url, headers=headers)
     return r.json()
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8000, debug=True)
